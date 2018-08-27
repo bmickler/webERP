@@ -8,6 +8,7 @@
  * @copyright 2003 - 2018 webERP.org
  * @license [GNU General Public License version 2.0 (GPLv2)](https://www.gnu.org/licenses/gpl-2.0.html)
  */
+
 /**
  * Set up the environment
  */
