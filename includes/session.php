@@ -64,7 +64,13 @@ ini_set('session.cookie_httponly',1);
  * Set a specific session_name to avoid potential default session_name conflicts 
  * with other apps using the same host.
  * @link http://www.weberp.org/forum/showthread.php?tid=8133 Examples
- * @todo Consider moving this to the config file
+ * @todo Consider moving the name setting to the config file to centralize user
+ * inputs on system configuration matters.  Maybe something like
+ *   config.php:
+ *     define("SESSION_ID","PHPSESSIDwebERPteam");
+ *
+ *  session.php:
+ *     session_name(SESSION_ID);
  */
 session_name('PHPSESSIDwebERPteam');
 session_start();
