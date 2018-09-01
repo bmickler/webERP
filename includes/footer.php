@@ -1,53 +1,68 @@
 <?php
+/**
+ * HTML page footer
+ * 
+ * @package webERP
+ * @subpackage Core
+ * @link http://www.weberp.org webERP Homepage
+ * @copyright 2003 - Present webERP.org
+ * @license [GNU General Public License version 2.0 (GPLv2)](https://www.gnu.org/licenses/gpl-2.0.html)
+ */
+/**
+ * Set up footer <div>
+ */
 echo '<div id="MessageContainerFoot">';
 
+/**
+ * Show any system messages
+ */
 if (isset($Messages) and count($Messages) > 0) {
-	foreach ($Messages as $Message) {
-		$Prefix = $Message[2];
-		switch ($Message[1]) {
-			case 'error':
-				$Class = 'error';
-				$Prefix = $Prefix ? $Prefix : _('ERROR') . ' ' . _('Report');
-				if (isset($_SESSION['LogSeverity']) and $_SESSION['LogSeverity'] > 3) {
-					fwrite($LogFile, date('Y-m-d h-m-s') . ',' . $Type . ',' . $_SESSION['UserID'] . ',' . trim($Msg, ',') . "\n");
-				}
-				echo '<div class="Message ' . $Class . ' noPrint">
-				<span class="MessageCloseButton">&times;</span>
-				<b>' . $Prefix . '</b> : ' . $Message[0] . '</div>';
-				break;
-			case 'warn':
-			case 'warning':
-				$Class = 'warn';
-				$Prefix = $Prefix ? $Prefix : _('WARNING') . ' ' . _('Report');
-				if (isset($_SESSION['LogSeverity']) and $_SESSION['LogSeverity'] > 3) {
-					fwrite($LogFile, date('Y-m-d h-m-s') . ',' . $Type . ',' . $_SESSION['UserID'] . ',' . trim($Msg, ',') . "\n");
-				}
-				echo '<div class="Message ' . $Class . ' noPrint">
-				<span class="MessageCloseButton">&times;</span>
-				<b>' . $Prefix . '</b> : ' . $Message[0] . '</div>';
-				break;
-			case 'success':
-				$Class = 'success';
-				$Prefix = $Prefix ? $Prefix : _('SUCCESS') . ' ' . _('Report');
-				if (isset($_SESSION['LogSeverity']) and $_SESSION['LogSeverity'] > 3) {
-					fwrite($LogFile, date('Y-m-d h-m-s') . ',' . $Type . ',' . $_SESSION['UserID'] . ',' . trim($Msg, ',') . "\n");
-				}
-				echo '<div class="Message ' . $Class . ' noPrint">
-				<span class="MessageCloseButton">&times;</span>
-				<b>' . $Prefix . '</b> : ' . $Message[0] . '</div>';
-				break;
-			case 'info':
-			default:
-				$Prefix = $Prefix ? $Prefix : _('INFORMATION') . ' ' . _('Message');
-				$Class = 'info';
-				if (isset($_SESSION['LogSeverity']) and $_SESSION['LogSeverity'] > 2) {
-					fwrite($LogFile, date('Y-m-d h-m-s') . ',' . $Type . ',' . $_SESSION['UserID'] . ',' . trim($Msg, ',') . "\n");
-				}
-				echo '<div class="Message ' . $Class . ' noPrint">
-				<span class="MessageCloseButton">&times;</span>
-				<b>' . $Prefix . '</b> : ' . $Message[0] . '</div>';
-		}
-	}
+    foreach ($Messages as $Message) {
+        $Prefix = $Message[2];
+        switch ($Message[1]) {
+            case 'error':
+                $Class = 'error';
+                $Prefix = $Prefix ? $Prefix : _('ERROR') . ' ' . _('Report');
+                if (isset($_SESSION['LogSeverity']) and $_SESSION['LogSeverity'] > 3) {
+                    fwrite($LogFile, date('Y-m-d h-m-s') . ',' . $Type . ',' . $_SESSION['UserID'] . ',' . trim($Msg, ',') . "\n");
+                }
+                echo '<div class="Message ' . $Class . ' noPrint">
+                <span class="MessageCloseButton">&times;</span>
+                <b>' . $Prefix . '</b> : ' . $Message[0] . '</div>';
+                break;
+            case 'warn':
+            case 'warning':
+                $Class = 'warn';
+                $Prefix = $Prefix ? $Prefix : _('WARNING') . ' ' . _('Report');
+                if (isset($_SESSION['LogSeverity']) and $_SESSION['LogSeverity'] > 3) {
+                    fwrite($LogFile, date('Y-m-d h-m-s') . ',' . $Type . ',' . $_SESSION['UserID'] . ',' . trim($Msg, ',') . "\n");
+                }
+                echo '<div class="Message ' . $Class . ' noPrint">
+                <span class="MessageCloseButton">&times;</span>
+                <b>' . $Prefix . '</b> : ' . $Message[0] . '</div>';
+                break;
+            case 'success':
+                $Class = 'success';
+                $Prefix = $Prefix ? $Prefix : _('SUCCESS') . ' ' . _('Report');
+                if (isset($_SESSION['LogSeverity']) and $_SESSION['LogSeverity'] > 3) {
+                    fwrite($LogFile, date('Y-m-d h-m-s') . ',' . $Type . ',' . $_SESSION['UserID'] . ',' . trim($Msg, ',') . "\n");
+                }
+                echo '<div class="Message ' . $Class . ' noPrint">
+                <span class="MessageCloseButton">&times;</span>
+                <b>' . $Prefix . '</b> : ' . $Message[0] . '</div>';
+                break;
+            case 'info':
+            default:
+                $Prefix = $Prefix ? $Prefix : _('INFORMATION') . ' ' . _('Message');
+                $Class = 'info';
+                if (isset($_SESSION['LogSeverity']) and $_SESSION['LogSeverity'] > 2) {
+                    fwrite($LogFile, date('Y-m-d h-m-s') . ',' . $Type . ',' . $_SESSION['UserID'] . ',' . trim($Msg, ',') . "\n");
+                }
+                echo '<div class="Message ' . $Class . ' noPrint">
+                <span class="MessageCloseButton">&times;</span>
+                <b>' . $Prefix . '</b> : ' . $Message[0] . '</div>';
+        }
+    }
 }
 echo '</div>'; // eof MessageContainer div
 echo '</div>'; // BodyWrapDiv

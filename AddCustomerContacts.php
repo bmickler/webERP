@@ -1,6 +1,16 @@
 <?php
-/* Adds customer contacts */
-
+/**
+ * Adds customer contacts
+ * 
+ * @package webERP
+ * @subpackage CMS
+ * @link http://www.weberp.org webERP Homepage
+ * @copyright 2003 - Present webERP.org
+ * @license [GNU General Public License version 2.0 (GPLv2)](https://www.gnu.org/licenses/gpl-2.0.html)
+ */
+/**
+ * Set up the environment
+ */
 include('includes/session.php');
 $Title = _('Customer Contacts');
 $ViewTopic = 'AccountsReceivable';

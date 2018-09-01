@@ -1,108 +1,169 @@
 <?php
+/**
+ * Common SQL functions
+ * 
+ * @package webERP
+ * @subpackage core
+ * @link http://www.weberp.org webERP Homepage
+ * @copyright 2003 - Present webERP.org
+ * @license [GNU General Public License version 2.0 (GPLv2)](https://www.gnu.org/licenses/gpl-2.0.html)
+ */
 
+/**
+ * Manages sequential transaction ID's for the different transation types.
+ * 
+ * Given a transaction type code ($TransType), retrieves the next sequential 
+ * transaction ID number for use in processing a transaction.  Then updates the 
+ * database table by incrementing the transaction iD by 1.  Each transaction 
+ * type has an associated counter field which holds the next available transaction 
+ * ID for that account type.  Transaction types and sequntial id's are maintained 
+ * in the table 'SysTypes'.  Transaction types include:
+ * 
+ * - 10 sales invoice, 
+ * - 11 sales credit note, 
+ * - 12 sales receipt, 
+ * - etc...
+ * 
+ * @param integer $TransType Transaction Type code
+ * @return integer The next available transaction ID for a transaction type
+ * @todo The return type of this function is normally an integer, yet it can 
+ * also throw verbose error messages.  Maybe create a return object which can 
+ * hold both error/success messages as well as transaction ID's so that the 
+ * function is more self-contained rather than relying on the global variable 
+ * error message system.
+ */
+Function GetNextTransNo($TransType){
+    /**
+     * Get the next available transaction ID
+     */
+    DB_query("SELECT typeno FROM systypes WHERE typeid='" . $TransType ."' FOR UPDATE");
+    
+    /**
+     * Now increment the database in preparation for the next transaction ID request
+     */
+    $SQL = "UPDATE systypes SET typeno = typeno + 1 WHERE typeid = '" . $TransType . "'";
+    $ErrMsg = _('CRITICAL ERROR') . '! ' . _('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') 
+            . ': ' . _('The transaction number could not be incremented');
+    $DbgMsg =  _('The following SQL to increment the transaction number was used');
+    $UpdTransNoResult = DB_query($SQL,$ErrMsg,$DbgMsg);
+    
+    /**
+     * Test the update query to ensure we have a valid next transaction ID
+     * @todo make this check more robust by comparing the SQL result to the input
+     * parameter plus 1.
+     */
+    $SQL = "SELECT typeno FROM systypes WHERE typeid= '" . $TransType . "'";
+    $ErrMsg = _('CRITICAL ERROR') . '! ' . _('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') 
+            . ': <BR>' . _('The next transaction number could not be retrieved from the database because');
+    $DbgMsg =  _('The following SQL to retrieve the transaction number was used');
+    $GetTransNoResult = DB_query($SQL,$ErrMsg,$DbgMsg);
+    $myrow = DB_fetch_row($GetTransNoResult);
+    return $myrow[0];
+}
 
-/* Common SQL Functions */
-
-
-Function GetNextTransNo ($TransType){
-
-/* SQL to get the next transaction number these are maintained in the table SysTypes - Transaction Types
-Also updates the transaction number
-
-10 sales invoice
-11 sales credit note
-12 sales receipt
-etc
-*
+/**
+ * Gets the GL Codes relevant to the stock item account from the stock category 
+ * record.
+ * 
+ * @param type $StockID The StockID to query.  StockID's are set in the database
+ * table 'stockmaster'.
+ * @return string[] array of various General Ledger account codes
+ * @todo The return type of this function is normally an array of strings, yet it can 
+ * also throw verbose error messages.  Maybe create a return object which can 
+ * hold both error/success messages as well as transaction ID's so that the 
+ * function is more self-contained rather than relying on the global variable 
+ * error message system.
 */
-	DB_query("SELECT typeno FROM systypes WHERE typeid='" . $TransType ."' FOR UPDATE");
-	$SQL = "UPDATE systypes SET typeno = typeno + 1 WHERE typeid = '" . $TransType . "'";
-	$ErrMsg = _('CRITICAL ERROR') . '! ' . _('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': ' . _('The transaction number could not be incremented');
-	$DbgMsg =  _('The following SQL to increment the transaction number was used');
-	$UpdTransNoResult = DB_query($SQL,$ErrMsg,$DbgMsg);
-	$SQL = "SELECT typeno FROM systypes WHERE typeid= '" . $TransType . "'";
-	$ErrMsg = _('CRITICAL ERROR') . '! ' . _('NOTE DOWN THIS ERROR AND SEEK ASSISTANCE') . ': <BR>' . _('The next transaction number could not be retrieved from the database because');
-	$DbgMsg =  _('The following SQL to retrieve the transaction number was used');
-	$GetTransNoResult = DB_query($SQL,$ErrMsg,$DbgMsg);
-	$myrow = DB_fetch_row($GetTransNoResult);
-	return $myrow[0];
+function GetStockGLCode($StockID){
+    $QuerySQL = "SELECT stockact,
+                                adjglact,
+                                issueglact,
+                                purchpricevaract,
+                                materialuseagevarac,
+                                wipact
+                FROM stockmaster INNER JOIN stockcategory
+                ON stockmaster.categoryid=stockcategory.categoryid
+                WHERE stockmaster.stockid = '" . $StockID . "'";
 
+    $ErrMsg =  _('The stock GL codes could not be retrieved because');
+    $GetStkGLResult = DB_query($QuerySQL, $ErrMsg);
+
+    $myrow = DB_fetch_array($GetStkGLResult);
+    return $myrow;
 }
 
+/**
+ * Returns a specific tax rate applicable to items of a designated tax category 
+ * and sold from a specific branch location.
+ * 
+ * @param int $TaxAuthority The Tax Authority ID as defined in table 'taxauthorities'
+ * @param int $DispatchTaxProvince The Tax Province ID as defined in table 'taxprovinces'
+ * @param int $TaxCategory The Tax Category ID as defined in table 'taxcategories'
+ * @return float
+ * @depricated This function does not appear to be called from anywhere within 
+ * webERP, however, the functionality exists in various pages through direct SQL
+ * queries.  Maybe this function is not depricated, but was never rolled out after
+ * being written?
+ */
+Function GetTaxRate($TaxAuthority, $DispatchTaxProvince, $TaxCategory){
+    $QuerySQL = "SELECT taxrate
+                    FROM taxauthrates
+                    WHERE taxauthority='" . $TaxAuthority . "'
+                    AND dispatchtaxprovince='" . $DispatchTaxProvince . "'
+                    AND taxcatid = '" . $TaxCategory . "'";
 
-Function GetStockGLCode ($StockID){
+    $ErrMsg = _('The tax rate for this item could not be retrieved because');
+    $GetTaxRateResult = DB_query($QuerySQL,$ErrMsg);
 
-/*Gets the GL Codes relevant to the stock item account from the stock category record */
-	$QuerySQL = "SELECT stockact,
-						adjglact,
-						issueglact,
-						purchpricevaract,
-						materialuseagevarac,
-						wipact
-				FROM stockmaster INNER JOIN stockcategory
-				ON stockmaster.categoryid=stockcategory.categoryid
-				WHERE stockmaster.stockid = '" . $StockID . "'";
-
-	$ErrMsg =  _('The stock GL codes could not be retrieved because');
-	$GetStkGLResult = DB_query($QuerySQL, $ErrMsg);
-
-	$myrow = DB_fetch_array($GetStkGLResult);
-	return $myrow;
+    if (DB_num_rows($GetTaxRateResult)==1){
+        $myrow = DB_fetch_row($GetTaxRateResult);
+        return $myrow[0];
+    } else {
+        /**
+         * The tax rate is not defined for this Tax Authority and Dispatch Tax Authority
+         */
+        return 0;
+    }
 }
 
-Function GetTaxRate ($TaxAuthority, $DispatchTaxProvince, $TaxCategory){
+/**
+ * Gets the Taxes and rates applicable to the tax group of the supplier and 
+ * SESSION['DefaultTaxCategory'] and the taxprovince of the location that the 
+ * user is setup to use.
+ * 
+ * @param int $TaxGroup
+ * @param int $DispatchTaxProvince
+ * @param int $TaxCategory
+ * @return array
+ * @depricated does not seem to be called from anywhere within the code, may have been 
+ * replaced by @see /includes/DefineSuppTransClass->GetTaxes()?
+ */
+Function GetTaxes($TaxGroup, $DispatchTaxProvince, $TaxCategory) {
+    $SQL = "SELECT taxgrouptaxes.calculationorder,
+                                    taxauthorities.description,
+                                    taxgrouptaxes.taxauthid,
+                                    taxauthorities.taxglcode,
+                                    taxgrouptaxes.taxontax,
+                                    taxauthrates.taxrate
+                    FROM taxauthrates INNER JOIN taxgrouptaxes ON
+                            taxauthrates.taxauthority=taxgrouptaxes.taxauthid
+                            INNER JOIN taxauthorities ON
+                            taxauthrates.taxauthority=taxauthorities.taxid
+                    WHERE taxgrouptaxes.taxgroupid='" . $TaxGroup . "'
+                    AND taxauthrates.dispatchtaxprovince='" . $DispatchTaxProvince . "'
+                    AND taxauthrates.taxcatid = '" . $TaxCategory . "'
+                    ORDER BY taxgrouptaxes.calculationorder";
 
-/*Gets the Tax rate applicable to an item from the TaxAuthority of the branch and TaxLevel of the item */
+    $ErrMsg = _('The taxes and rate for this tax group could not be retrieved because');
+    $GetTaxesResult = DB_query($SQL,$ErrMsg);
 
-	$QuerySQL = "SELECT taxrate
-				FROM taxauthrates
-				WHERE taxauthority='" . $TaxAuthority . "'
-				AND dispatchtaxprovince='" . $DispatchTaxProvince . "'
-				AND taxcatid = '" . $TaxCategory . "'";
-
-	$ErrMsg = _('The tax rate for this item could not be retrieved because');
-	$GetTaxRateResult = DB_query($QuerySQL,$ErrMsg);
-
-	if (DB_num_rows($GetTaxRateResult)==1){
-		$myrow = DB_fetch_row($GetTaxRateResult);
-		return $myrow[0];
-	} else {
-		/*The tax rate is not defined for this Tax Authority and Dispatch Tax Authority */
-		return 0;
-	}
-
+    if (DB_num_rows($GetTaxesResult)>=1){
+        return $GetTaxesResult;
+    } else {
+        /*The tax group is not defined with rates */
+        return 0;
+    }
 }
-
-Function GetTaxes ($TaxGroup, $DispatchTaxProvince, $TaxCategory) {
-
-	$SQL = "SELECT taxgrouptaxes.calculationorder,
-					taxauthorities.description,
-					taxgrouptaxes.taxauthid,
-					taxauthorities.taxglcode,
-					taxgrouptaxes.taxontax,
-					taxauthrates.taxrate
-			FROM taxauthrates INNER JOIN taxgrouptaxes ON
-				taxauthrates.taxauthority=taxgrouptaxes.taxauthid
-				INNER JOIN taxauthorities ON
-				taxauthrates.taxauthority=taxauthorities.taxid
-			WHERE taxgrouptaxes.taxgroupid='" . $TaxGroup . "'
-			AND taxauthrates.dispatchtaxprovince='" . $DispatchTaxProvince . "'
-			AND taxauthrates.taxcatid = '" . $TaxCategory . "'
-			ORDER BY taxgrouptaxes.calculationorder";
-
-
-	$ErrMsg = _('The taxes and rate for this tax group could not be retrieved because');
-	$GetTaxesResult = DB_query($SQL,$ErrMsg);
-
-	if (DB_num_rows($GetTaxesResult)>=1){
-		return $GetTaxesResult;
-	} else {
-		/*The tax group is not defined with rates */
-		return 0;
-	}
-}
-
-
 
 Function GetCreditAvailable($DebtorNo) {
 
@@ -501,5 +562,4 @@ function CreateQASample ($ProdSpecKey, $LotKey, $Identifier, $Comments, $Cert, $
 		} //$myrow2[0]=0
 	} //$myrow[0]>0
 }
-
 ?>

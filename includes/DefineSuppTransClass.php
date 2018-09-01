@@ -75,12 +75,12 @@ Class SuppTrans {
 
 		while ($myrow = DB_fetch_array($GetTaxRatesResult)){
 
-			$this->Taxes[$myrow['calculationorder']] = new Tax($myrow['calculationorder'],
-																$myrow['taxauthid'],
-																$myrow['description'],
-																$myrow['taxrate'],
-																$myrow['taxontax'],
-																$myrow['purchtaxglaccount']);
+                    $this->Taxes[$myrow['calculationorder']] = new Tax($myrow['calculationorder'],
+                        $myrow['taxauthid'],
+                        $myrow['description'],
+                        $myrow['taxrate'],
+                        $myrow['taxontax'],
+                        $myrow['purchtaxglaccount']);
 		}
 	} //end method GetTaxes()
 
